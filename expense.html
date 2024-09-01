@@ -8,13 +8,13 @@
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </head>
 <body>
-    <form onsubmit="handleSubmiit(event)">
+    <form id="form" >
     <label for="amount">Enter Expense Amount</label>
-    <input type="text" name="amount" id="amount1">
+    <input type="text" name="amount" id="amount">
     <label for="description">Description</label>
-    <input type="text" name = "description" id="description1">
+    <input type="text" name = "description" id="description">
     <label for="catogory">Choose catogory</label>
-    <select name="catogory" id="catogory1">
+    <select name="catogory" id="catogory">
     <option value="select" selected>select</option>
     <option value="movies">movies</option>
     <option value="sports">sports</option>
@@ -24,8 +24,60 @@
     </select>
     <button type="submit">Add Expense</button>
     </form>
-    <script src = expense.js></script>
+    <div id = "div"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', ()=>{
+
+            console.log('dom loaded')
+
+            const form = document.getElementById('form');
+            const div = document.getElementById('div');
+
+            axios.get("http://localhost:4000/entries").then((response)=>{
+                response.data.forEach(element => {
+                    displayItem(element)   
+                });
+            }).catch(err=>console.log(err))
+
+    
+
+            const handleSubmit = (event) =>{
+                event.preventDefault();
+                const data = {
+                    amount : event.target.amount.value,
+                    description : event.target.description.value,
+                    catogory : event.target.catogory.value
+                }
+                console.log(data)
+                axios.post("http://localhost:4000/entries",data).then(()=> console.log('sent data for posting')).catch(err=> console.log(err));
+                
+            }
+
+            function displayItem(element){
+                const li = document.createElement('li');
+                const delete_btn = document.createElement('button')
+                delete_btn.textContent = "delete";
+                const id = element.id;
+                li.textContent = `${element.amount}  ${element.catogory}   ${element.description}`;
+                li.appendChild(delete_btn);
+
+                delete_btn.onclick = function (){
+                    axios.post(`http://localhost:4000/entries/${id}`).then(()=>{
+                        console.log('id sent to delete')
+                    }).catch(err=>console.log(err))
+                }
+                div.appendChild(li);
+            }
+
+
+
+            form.addEventListener('submit',handleSubmit);
+
+
+        })
+    </script>
 
     
 </body>
+<script src = "https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
 </html>
